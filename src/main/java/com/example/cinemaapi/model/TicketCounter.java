@@ -1,6 +1,5 @@
 package com.example.cinemaapi.model;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,9 +49,8 @@ public class TicketCounter {
     }
 
     public void addClient(Client client) {
-        client.setTicketCounter(this); // importante para manter a relação bidirecional
-        queue.add(client);
-        queue.sort(null);
+        client.setTicketCounter(this);
+        this.queue.add(client);
     }
 
     public Client getCurrentClient() {
@@ -66,10 +64,8 @@ public class TicketCounter {
     public Client assistClient() {
         if (queue.isEmpty())
             return null;
-
         Client client = queue.remove(0);
-        client.setAttendedAt(LocalDateTime.now());
-        this.currentClient = client;
+        this.setCurrentClient(client); // caso você queira saber quem está sendo atendido
         return client;
     }
 }

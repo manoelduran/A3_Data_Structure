@@ -70,7 +70,11 @@ public class Client implements Comparable<Client> {
 
     @Override
     public int compareTo(Client other) {
-        return Integer.compare(this.type.getPriority(), other.type.getPriority());
+        int priorityCompare = Integer.compare(this.type.getPriority(), other.type.getPriority());
+        if (priorityCompare == 0) {
+            return this.joinedAt.compareTo(other.joinedAt);
+        }
+        return priorityCompare;
     }
 
     public Duration getWaitingTime() {

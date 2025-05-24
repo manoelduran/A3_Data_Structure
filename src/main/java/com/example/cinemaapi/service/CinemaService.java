@@ -36,26 +36,17 @@ public class CinemaService {
     }
 
     public Client addClient(String name, Client.ClientType type) {
-        List<TicketCounter> counters = counterRepo.findAll()
-                .stream().filter(TicketCounter::isActive)
-                .sorted(Comparator.comparingInt(c -> c.getQueue().size()))
-                .toList();
+        // Busca todos os guichês ativos e ordena por tamanho da fila
+        TicketCounter selectedCounter = counterRepo.findAll().stream()
+                .filter(TicketCounter::isActive)
+                .min(Comparator.comparingInt(c -> c.getQueue().size()))
+                .orElseThrow(() -> new RuntimeException("Nenhum guichê ativo no momento"));
 
-        if (counters.isEmpty()) {
-            throw new RuntimeException("Nenhum guichê ativo no momento");
-        }
-
-        TicketCounter selected = counters.get(0);
+        // Cria o cliente e adiciona ao guichê
         Client client = new Client(name, type);
+        selectedCounter.addClient(client); // encapsula a lógica de adicionar e associar o client ao guichê
 
-        // Associa client ao guichê
-        client.setTicketCounter(selected);
-
-        selected.getQueue().add(client);
-
-        // Persistir apenas o client já é suficiente se o relacionamento estiver correto
         clientRepo.save(client);
-
         return client;
     }
 
@@ -64,8 +55,10 @@ public class CinemaService {
                 .map(counter -> {
                     TicketCounterDTO dto = new TicketCounterDTO();
                     dto.id = counter.getId();
-                    dto.isPaused = !counter.isActive();
-                    dto.queue = ClientMapper.toClientDTOList(counter.getQueue());
+                    dto.queue = ClientMapper.toClientDTOList(
+                            counter.getQueue().stream()
+                                    .sorted()
+                                    .toList());
                     dto.currentClient = ClientMapper.toClientDTO(counter.getCurrentClient());
                     return dto;
                 })
@@ -73,22 +66,53 @@ public class CinemaService {
     }
 
     public void stopTicketCounter(int id) {
-        TicketCounter ticketCounter = counterRepo.findAll().stream().filter(g -> g.getId() == id).findFirst()
+        TicketCounter ticketCounter = counterRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Guichê não encontrado"));
+
+        // Pausa o guichê
         ticketCounter.stop();
 
-        List<Client> clients = new ArrayList<>(ticketCounter.getQueue());
+        // Captura os clientes da fila e limpa a fila
+        List<Client> clientsToRedistribute = new ArrayList<>(ticketCounter.getQueue());
         ticketCounter.getQueue().clear();
 
-        clients.forEach(client -> addClient(client.getName(), client.getType()));
+        // Obtem os guichês ativos ordenados pelos menores tamanhos de fila
+        List<TicketCounter> activeCounters = counterRepo.findAll().stream()
+                .filter(TicketCounter::isActive)
+                .sorted(Comparator.comparingInt(c -> c.getQueue().size()))
+                .toList();
+
+        if (activeCounters.isEmpty()) {
+            throw new RuntimeException("Nenhum guichê ativo para redistribuir os clientes");
+        }
+
+        // Redistribui os clientes manualmente preservando o objeto original
+        for (Client client : clientsToRedistribute) {
+            TicketCounter target = activeCounters.stream()
+                    .min(Comparator.comparingInt(c -> c.getQueue().size()))
+                    .orElseThrow();
+
+            client.setTicketCounter(target);
+            target.addClient(client);
+        }
+
+        // Salva todos os clientes redistribuídos
+        clientRepo.saveAll(clientsToRedistribute);
     }
 
-    public Client assisClient(int id) {
-        TicketCounter ticketCounter = counterRepo.findAll().stream().filter(g -> g.getId() == id && g.isActive())
-                .findFirst()
+    public Client assistClient(int id) {
+        TicketCounter ticketCounter = counterRepo.findById(id)
+                .filter(TicketCounter::isActive)
                 .orElseThrow(() -> new RuntimeException("Guichê inválido ou inativo"));
 
-        return ticketCounter.assistClient();
+        Client client = ticketCounter.assistClient();
+
+        if (client != null) {
+            client.setAttendedAt(java.time.LocalDateTime.now());
+            clientRepo.save(client);
+        }
+
+        return client;
     }
 
     public Duration getAverageWaitingTime() {

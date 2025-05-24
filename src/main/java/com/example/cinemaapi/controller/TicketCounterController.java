@@ -45,7 +45,7 @@ public class TicketCounterController {
 
     @PostMapping("/ticket-counters/{id}/assist")
     public Client assisClient(@PathVariable int id) {
-        return cinemaService.assisClient(id);
+        return cinemaService.assistClient(id);
     }
 
     @GetMapping("/average-waiting-time")
