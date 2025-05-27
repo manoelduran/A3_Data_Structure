@@ -16,6 +16,7 @@ public class SeedService {
 
     private final TicketOfficeRepository ticketOfficeRepository;
     private final CustomerRepository customerRepository;
+    private final QueueService queueService;
 
     @PostConstruct
     public void init() {
@@ -39,5 +40,6 @@ public class SeedService {
         customer.setName(name);
         customer.setType(type);
         customerRepository.save(customer);
+        queueService.enqueue(customer.getId());
     }
 }

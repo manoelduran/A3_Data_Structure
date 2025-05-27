@@ -1,7 +1,9 @@
 package com.example.cinemaapi.service;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -81,29 +83,36 @@ public class QueueService {
         TicketOffice guiche = ticketOfficeRepository.findById(guicheId)
                 .orElseThrow(() -> new EntityNotFoundException("Guichê não encontrado"));
 
-        List<Queue> queues = queueRepository.findByTicketOfficeOrderByPriorityDescPositionAsc(guiche);
-        TicketOfficeStatus activeStatus = TicketOfficeStatus.ACTIVE;
+        List<Queue> queues = queueRepository.findByTicketOfficeOrderByPositionAsc(guiche);
         List<TicketOffice> availableTicketOffices = ticketOfficeRepository
-                .findByStatusAndIdNot(activeStatus, guicheId);
+                .findByStatusAndIdNot(TicketOfficeStatus.ACTIVE, guicheId);
+
         if (availableTicketOffices.isEmpty()) {
             throw new IllegalStateException("Não há guichês disponíveis para redistribuição");
+        }
+
+        // Mapa para manter controle em tempo real da quantidade de clientes por guichê
+        Map<Long, Integer> filaPorGuiche = new HashMap<>();
+        for (TicketOffice g : availableTicketOffices) {
+            filaPorGuiche.put(g.getId(), queueRepository.countByTicketOffice(g));
         }
 
         for (Queue queue : queues) {
             // Encontrar o guichê com menor fila
             TicketOffice newTicketOffice = availableTicketOffices.stream()
-                    .min(Comparator.comparingInt(g -> queueRepository.countByTicketOffice(g)))
+                    .min(Comparator.comparingInt(g -> filaPorGuiche.get(g.getId())))
                     .orElseThrow(() -> new IllegalStateException("Erro ao selecionar guichê"));
 
-            // Mover cliente para o novo guichê
+            // Atualizar guichê e posição
             queue.setTicketOffice(newTicketOffice);
-
-            // Atualizar posição mantendo a prioridade
             Integer lastPosition = queueRepository.findMaxPositionByTicketOffice(newTicketOffice);
             queue.setPosition(lastPosition != null ? lastPosition + 1 : 1);
 
             queueRepository.save(queue);
             reorder(newTicketOffice.getId());
+
+            // Atualizar contagem no mapa
+            filaPorGuiche.put(newTicketOffice.getId(), filaPorGuiche.get(newTicketOffice.getId()) + 1);
         }
 
         log.info("Redistribuídos {} clientes do guichê {}", queues.size(), guiche.getNumber());
