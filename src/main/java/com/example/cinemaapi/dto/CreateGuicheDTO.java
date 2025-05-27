@@ -4,5 +4,6 @@ import lombok.Data;
 
 @Data
 public class CreateGuicheDTO {
-    private Integer numero;
+    private Integer number;
+
 }

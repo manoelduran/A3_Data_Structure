@@ -3,6 +3,8 @@ package com.example.cinemaapi.model;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -20,40 +22,37 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "guiche")
+@Table(name = "ticket_office")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Guiche {
+public class TicketOffice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private Integer numero;
-
-    @Builder.Default
-    @Column(name = "em_pausa", nullable = false)
-    private boolean emPausa = false;
+    private Integer number;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     @Builder.Default
-    private boolean ativo = true;
+    private TicketOfficeStatus status = TicketOfficeStatus.ACTIVE;
 
-    @OneToMany(mappedBy = "guiche", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "ticketOffice", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     @JsonManagedReference
-    private List<Fila> filas = new ArrayList<>();
+    private List<Queue> queue = new ArrayList<>();
 
     @Override
     public boolean equals(Object o) {
         if (this == o)
             return true;
-        if (!(o instanceof Guiche))
+        if (!(o instanceof TicketOffice))
             return false;
-        return id != null && id.equals(((Guiche) o).getId());
+        return id != null && id.equals(((TicketOffice) o).getId());
     }
 
     @Override

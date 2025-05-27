@@ -9,30 +9,30 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.example.cinemaapi.dto.AddToQueueDTO;
 import java.util.List;
-import com.example.cinemaapi.model.Fila;
-import com.example.cinemaapi.service.FilaService;
+import com.example.cinemaapi.model.Queue;
+import com.example.cinemaapi.service.QueueService;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/queues")
 @RequiredArgsConstructor
-public class FilaController {
-    private final FilaService filaService;
+public class QueueController {
+    private final QueueService queueService;
 
     @PostMapping("/enqueue")
-    public ResponseEntity<Fila> adicionarCliente(@RequestBody AddToQueueDTO dto) {
-        return ResponseEntity.ok(filaService.adicionarClienteAFila(dto.getClienteId(), dto.getGuicheId()));
+    public ResponseEntity<Queue> enqueueCustomer(@RequestBody AddToQueueDTO dto) {
+        return ResponseEntity.ok(queueService.enqueue(dto.getCustomerId()));
     }
 
     @PostMapping("/dequeue")
-    public ResponseEntity<Void> atenderProximoCliente(@RequestParam Long guicheId) {
-        filaService.atenderProximoCliente(guicheId);
+    public ResponseEntity<Void> dequeueCustomer(@RequestParam Long ticketOfficeId) {
+        queueService.dequeue(ticketOfficeId);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping
-    public ResponseEntity<List<Fila>> visualizarFilas() {
-        return ResponseEntity.ok(filaService.visualizarFilas());
+    public ResponseEntity<List<Queue>> list() {
+        return ResponseEntity.ok(queueService.list());
     }
 }

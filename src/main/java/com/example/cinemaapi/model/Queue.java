@@ -1,7 +1,11 @@
 package com.example.cinemaapi.model;
 
+import java.time.LocalDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,38 +25,49 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "fila", uniqueConstraints = @UniqueConstraint(columnNames = { "guiche_id", "cliente_id" }))
+@Table(name = "queue", uniqueConstraints = @UniqueConstraint(columnNames = { "ticket_office_id", "customer_id" }))
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Fila {
+public class Queue {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "guiche_id")
+    @JoinColumn(name = "ticket_office_id")
     @JsonBackReference
-    private Guiche guiche;
+    private TicketOffice ticketOffice;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "cliente_id")
-    @JsonBackReference
-    private Cliente cliente;
+    @JoinColumn(name = "customer_id")
+    @JsonIgnoreProperties("queue")
+    private Customer customer;
 
     @Column(nullable = false)
-    private Integer prioridade;
+    private Integer priority;
+
+    @Column(name = "served", nullable = false)
+    @Builder.Default
+    private boolean served = false;
 
     @Column(nullable = false)
-    private Integer posicao;
+    private Integer position;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @CreationTimestamp
+    private LocalDateTime createdAt;
 
     @PrePersist
     @PreUpdate
-    private void calcularPrioridade() {
-        if (this.prioridade == null && this.cliente != null) {
-            this.prioridade = this.cliente.getTipo().getPrioridade();
+    private void prePersistAndUpdate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        if (this.priority == null && this.customer != null) {
+            this.priority = this.customer.getType().getPriorityOrder();
         }
     }
 
@@ -60,9 +75,9 @@ public class Fila {
     public boolean equals(Object o) {
         if (this == o)
             return true;
-        if (!(o instanceof Fila))
+        if (!(o instanceof Queue))
             return false;
-        return id != null && id.equals(((Fila) o).getId());
+        return id != null && id.equals(((Queue) o).getId());
     }
 
     @Override

@@ -15,40 +15,40 @@ import org.hibernate.annotations.CreationTimestamp;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
-@Table(name = "cliente")
+@Table(name = "customer")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Cliente {
+public class Customer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
-    private String nome;
+    private String name;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private TipoCliente tipo;
+    private CustomerType type;
 
     @CreationTimestamp
-    @Column(name = "data_criacao", updatable = false)
-    private LocalDateTime dataCriacao;
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     @JsonManagedReference
-    private List<Fila> filas = new ArrayList<>();
+    private List<Queue> queue = new ArrayList<>();
 
     @Override
     public boolean equals(Object o) {
         if (this == o)
             return true;
-        if (!(o instanceof Cliente))
+        if (!(o instanceof Customer))
             return false;
-        return id != null && id.equals(((Cliente) o).getId());
+        return id != null && id.equals(((Customer) o).getId());
     }
 
     @Override
