@@ -83,7 +83,7 @@ public class QueueService {
         TicketOffice guiche = ticketOfficeRepository.findById(guicheId)
                 .orElseThrow(() -> new EntityNotFoundException("Guichê não encontrado"));
 
-        List<Queue> queues = queueRepository.findByTicketOfficeOrderByPositionAsc(guiche);
+        List<Queue> queues = queueRepository.findByTicketOfficeOrderByPriorityDescPositionAsc(guiche);
         List<TicketOffice> availableTicketOffices = ticketOfficeRepository
                 .findByStatusAndIdNot(TicketOfficeStatus.ACTIVE, guicheId);
 
@@ -123,24 +123,23 @@ public class QueueService {
         TicketOffice ticketOffice = ticketOfficeRepository.findById(ticketOfficeId)
                 .orElseThrow(() -> new EntityNotFoundException("Guichê não encontrado"));
 
-        Optional<Queue> next = queueRepository.findFirstByTicketOfficeOrderByPriorityDescPositionAsc(ticketOffice);
+        // Busca a fila ordenada previamente
+        List<Queue> queues = queueRepository.findByTicketOffice(ticketOffice);
 
-        if (next.isPresent()) {
-            queueRepository.delete(next.get());
+        if (!queues.isEmpty()) {
+            // Remove o primeiro da lista (que já está ordenada corretamente)
+            Queue next = queues.remove(0);
+            queueRepository.delete(next);
 
-            // Reorganizar posições dos clientes restantes
-            List<Queue> lastQueues = queueRepository.findByTicketOfficeOrderByPriorityDescPositionAsc(ticketOffice);
-            for (int i = 0; i < lastQueues.size(); i++) {
-                Queue f = lastQueues.get(i);
-                f.setPosition(i + 1);
-                queueRepository.save(f);
+            // Reorganiza as posições dos demais
+            for (int i = 0; i < queues.size(); i++) {
+                queues.get(i).setPosition(i + 1);
             }
+
+            queueRepository.saveAll(queues);
 
             log.info("Cliente atendido no guichê {}", ticketOffice.getNumber());
         }
     }
 
-    public List<Queue> list() {
-        return queueRepository.findAllByOrderByTicketOfficeAscPriorityDescPositionAsc();
-    }
 }

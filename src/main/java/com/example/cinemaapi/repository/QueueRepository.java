@@ -18,9 +18,11 @@ public interface QueueRepository extends JpaRepository<Queue, Long> {
 
     boolean existsByCustomerAndServedFalse(Customer customer);
 
+    Optional<Queue> findFirstByTicketOffice(TicketOffice ticketOffice);
+
     List<Queue> findByTicketOfficeId(Long ticketOfficeId);
 
-    Optional<Queue> findFirstByTicketOfficeOrderByPriorityDescPositionAsc(TicketOffice ticketOffice);
+    List<Queue> findByTicketOffice(TicketOffice ticketOffice);
 
     List<Queue> findByTicketOfficeOrderByPriorityDescPositionAsc(TicketOffice ticketOffice);
 

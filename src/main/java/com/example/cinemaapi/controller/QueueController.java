@@ -5,10 +5,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+
+import org.springframework.web.bind.annotation.PathVariable;
 import com.example.cinemaapi.dto.AddToQueueDTO;
-import java.util.List;
+
 import com.example.cinemaapi.model.Queue;
 import com.example.cinemaapi.service.QueueService;
 
@@ -25,14 +25,9 @@ public class QueueController {
         return ResponseEntity.ok(queueService.enqueue(dto.getCustomerId()));
     }
 
-    @PostMapping("/dequeue")
-    public ResponseEntity<Void> dequeueCustomer(@RequestParam Long ticketOfficeId) {
+    @PostMapping("/dequeue/{ticketOfficeId}")
+    public ResponseEntity<Void> dequeueCustomer(@PathVariable Long ticketOfficeId) {
         queueService.dequeue(ticketOfficeId);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping
-    public ResponseEntity<List<Queue>> list() {
-        return ResponseEntity.ok(queueService.list());
     }
 }

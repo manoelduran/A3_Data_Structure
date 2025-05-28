@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.Value;
 
 @Entity
 @Table(name = "ticket_office")
@@ -35,6 +36,9 @@ public class TicketOffice {
 
     @Column(nullable = false, unique = true)
     private Integer number;
+
+    @Column(name = "attendance_time")
+    private Long attendanceTimeInSeconds;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
