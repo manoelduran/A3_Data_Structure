@@ -12,7 +12,8 @@ import com.example.cinemaapi.model.TicketOffice;
 import com.example.cinemaapi.model.Customer;
 
 public interface QueueRepository extends JpaRepository<Queue, Long> {
-    int countByTicketOffice(TicketOffice ticketOffice);
+    @Query("SELECT COUNT(q) FROM Queue q WHERE q.ticketOffice = :ticketOffice AND q.served = false")
+    int countActiveByTicketOffice(@Param("ticketOffice") TicketOffice ticketOffice);
 
     boolean existsByCustomer(Customer customer);
 
@@ -23,6 +24,8 @@ public interface QueueRepository extends JpaRepository<Queue, Long> {
     List<Queue> findByTicketOfficeId(Long ticketOfficeId);
 
     List<Queue> findByTicketOffice(TicketOffice ticketOffice);
+
+    List<Queue> findByTicketOfficeAndServedFalseOrderByPriorityAscPositionAsc(TicketOffice ticketOffice);
 
     List<Queue> findByTicketOfficeOrderByPriorityDescPositionAsc(TicketOffice ticketOffice);
 

@@ -64,6 +64,16 @@ public class TicketOfficeService {
     }
 
     public List<TicketOffice> list() {
-        return ticketOfficeRepository.findAll();
+        List<TicketOffice> offices = ticketOfficeRepository.findAll();
+
+        for (TicketOffice office : offices) {
+            office.setQueue(
+                    office.getQueue()
+                            .stream()
+                            .filter(entry -> !entry.isServed())
+                            .toList());
+        }
+
+        return offices;
     }
 }

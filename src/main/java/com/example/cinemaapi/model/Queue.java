@@ -17,7 +17,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,7 +24,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "queue", uniqueConstraints = @UniqueConstraint(columnNames = { "ticket_office_id", "customer_id" }))
+@Table(name = "queue")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -59,6 +58,9 @@ public class Queue {
     @Column(name = "created_at", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
+    @Column(name = "attended_at", nullable = false, updatable = false)
+    @CreationTimestamp
+    private LocalDateTime attendedAt;
 
     @PrePersist
     @PreUpdate

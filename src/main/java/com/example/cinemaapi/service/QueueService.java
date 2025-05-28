@@ -1,11 +1,10 @@
 package com.example.cinemaapi.service;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -47,10 +46,12 @@ public class QueueService {
 
         // Escolhe o guichê com a menor fila
         TicketOffice selectedOffice = activeOffices.stream()
-                .min(Comparator.comparingInt(office -> queueRepository.countByTicketOffice(office)))
+                .min(Comparator
+                        .comparingInt((TicketOffice office) -> queueRepository.countActiveByTicketOffice(office))
+                        .thenComparing(TicketOffice::getNumber) // Desempate pelo ID mais baixo
+                )
                 .orElseThrow(() -> new RuntimeException("Erro ao selecionar guichê"));
-
-        int position = queueRepository.countByTicketOffice(selectedOffice);
+        int position = queueRepository.countActiveByTicketOffice(selectedOffice);
 
         Queue queue = Queue.builder()
                 .customer(customer)
@@ -94,7 +95,7 @@ public class QueueService {
         // Mapa para manter controle em tempo real da quantidade de clientes por guichê
         Map<Long, Integer> filaPorGuiche = new HashMap<>();
         for (TicketOffice g : availableTicketOffices) {
-            filaPorGuiche.put(g.getId(), queueRepository.countByTicketOffice(g));
+            filaPorGuiche.put(g.getId(), queueRepository.countActiveByTicketOffice(g));
         }
 
         for (Queue queue : queues) {
@@ -119,17 +120,22 @@ public class QueueService {
     }
 
     @Transactional
-    public void dequeue(Long ticketOfficeId) {
+    public Queue dequeue(Long ticketOfficeId) {
         TicketOffice ticketOffice = ticketOfficeRepository.findById(ticketOfficeId)
                 .orElseThrow(() -> new EntityNotFoundException("Guichê não encontrado"));
 
-        // Busca a fila ordenada previamente
-        List<Queue> queues = queueRepository.findByTicketOffice(ticketOffice);
+        // Busca apenas os clientes que ainda não foram atendidos, ordenados por posição
+        List<Queue> queues = queueRepository
+                .findByTicketOfficeAndServedFalseOrderByPriorityAscPositionAsc(ticketOffice);
 
         if (!queues.isEmpty()) {
-            // Remove o primeiro da lista (que já está ordenada corretamente)
+            // Pega o primeiro da fila
             Queue next = queues.remove(0);
-            queueRepository.delete(next);
+
+            // Marca como atendido em vez de remover
+            next.setServed(true);
+            next.setAttendedAt(LocalDateTime.now());
+            queueRepository.save(next);
 
             // Reorganiza as posições dos demais
             for (int i = 0; i < queues.size(); i++) {
@@ -139,7 +145,9 @@ public class QueueService {
             queueRepository.saveAll(queues);
 
             log.info("Cliente atendido no guichê {}", ticketOffice.getNumber());
+            return next;
         }
-    }
 
+        throw new EntityNotFoundException("Nenhum cliente na fila do guichê " + ticketOfficeId);
+    }
 }

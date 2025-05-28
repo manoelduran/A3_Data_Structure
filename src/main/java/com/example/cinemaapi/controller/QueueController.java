@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import org.springframework.web.bind.annotation.PathVariable;
 import com.example.cinemaapi.dto.AddToQueueDTO;
-
+import com.example.cinemaapi.model.Customer;
 import com.example.cinemaapi.model.Queue;
 import com.example.cinemaapi.service.QueueService;
 
@@ -26,8 +26,7 @@ public class QueueController {
     }
 
     @PostMapping("/dequeue/{ticketOfficeId}")
-    public ResponseEntity<Void> dequeueCustomer(@PathVariable Long ticketOfficeId) {
-        queueService.dequeue(ticketOfficeId);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Queue> dequeueCustomer(@PathVariable Long ticketOfficeId) {
+        return ResponseEntity.ok(queueService.dequeue(ticketOfficeId));
     }
 }
