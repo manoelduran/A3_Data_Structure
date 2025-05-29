@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.GetMapping;
 import java.util.List;
 import com.example.cinemaapi.dto.CreateGuicheDTO;
+import com.example.cinemaapi.model.Queue;
 import com.example.cinemaapi.model.TicketOffice;
 import com.example.cinemaapi.service.TicketOfficeService;
 
@@ -24,6 +25,12 @@ public class TicketOfficeController {
     @PostMapping
     public ResponseEntity<TicketOffice> create(@RequestBody CreateGuicheDTO request) {
         return ResponseEntity.ok(ticketOfficeService.create(request.getNumber()));
+    }
+
+    @GetMapping("/{id}/history")
+    public ResponseEntity<List<Queue>> getHistory(@PathVariable Long id) {
+        List<Queue> history = ticketOfficeService.getHistory(id);
+        return ResponseEntity.ok(history);
     }
 
     @PutMapping("/{id}/stop")

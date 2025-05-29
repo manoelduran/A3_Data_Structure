@@ -29,6 +29,10 @@ public interface QueueRepository extends JpaRepository<Queue, Long> {
 
     List<Queue> findByTicketOfficeOrderByPriorityDescPositionAsc(TicketOffice ticketOffice);
 
+    List<Queue> findByTicketOfficeAndServedTrueOrderByAttendedAtDesc(TicketOffice ticketOffice);
+
+    List<Queue> findByTicketOfficeAndServedFalseOrderByPriorityDescPositionAsc(TicketOffice ticketOffice);
+
     List<Queue> findByTicketOfficeOrderByPositionAsc(TicketOffice ticketOffice);
 
     @Query("SELECT MAX(f.position) FROM Queue f WHERE f.ticketOffice = :ticketOffice")

@@ -1,10 +1,12 @@
 package com.example.cinemaapi.service;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.cinemaapi.model.Queue;
 import com.example.cinemaapi.model.TicketOffice;
 import com.example.cinemaapi.model.TicketOfficeStatus;
 import com.example.cinemaapi.repository.TicketOfficeRepository;
@@ -64,7 +66,7 @@ public class TicketOfficeService {
     }
 
     public List<TicketOffice> list() {
-        List<TicketOffice> offices = ticketOfficeRepository.findAll();
+        List<TicketOffice> offices = ticketOfficeRepository.findAll(Sort.by("number"));
 
         for (TicketOffice office : offices) {
             office.setQueue(
@@ -75,5 +77,15 @@ public class TicketOfficeService {
         }
 
         return offices;
+    }
+
+    public List<Queue> getHistory(Long ticketOfficeId) {
+        TicketOffice ticketOffice = ticketOfficeRepository.findById(ticketOfficeId)
+                .orElseThrow(() -> new EntityNotFoundException("Guichê não encontrado"));
+
+        return ticketOffice.getQueue()
+                .stream()
+                .filter(Queue::isServed)
+                .toList();
     }
 }

@@ -58,8 +58,7 @@ public class Queue {
     @Column(name = "created_at", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
-    @Column(name = "attended_at", nullable = false, updatable = false)
-    @CreationTimestamp
+    @Column(name = "attended_at")
     private LocalDateTime attendedAt;
 
     @PrePersist

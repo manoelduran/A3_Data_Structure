@@ -84,7 +84,7 @@ public class QueueService {
         TicketOffice guiche = ticketOfficeRepository.findById(guicheId)
                 .orElseThrow(() -> new EntityNotFoundException("Guichê não encontrado"));
 
-        List<Queue> queues = queueRepository.findByTicketOfficeOrderByPriorityDescPositionAsc(guiche);
+        List<Queue> queues = queueRepository.findByTicketOfficeAndServedFalseOrderByPriorityDescPositionAsc(guiche);
         List<TicketOffice> availableTicketOffices = ticketOfficeRepository
                 .findByStatusAndIdNot(TicketOfficeStatus.ACTIVE, guicheId);
 
@@ -117,6 +117,14 @@ public class QueueService {
         }
 
         log.info("Redistribuídos {} clientes do guichê {}", queues.size(), guiche.getNumber());
+    }
+
+    @Transactional(readOnly = true)
+    public List<Queue> getHistoryByTicketOffice(Long ticketOfficeId) {
+        TicketOffice ticketOffice = ticketOfficeRepository.findById(ticketOfficeId)
+                .orElseThrow(() -> new EntityNotFoundException("Guichê não encontrado"));
+
+        return queueRepository.findByTicketOfficeAndServedTrueOrderByAttendedAtDesc(ticketOffice);
     }
 
     @Transactional
