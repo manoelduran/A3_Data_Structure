@@ -24,15 +24,27 @@ public class SeedService {
             TicketOffice office = new TicketOffice();
             office.setNumber(i);
             office.setStatus(TicketOfficeStatus.ACTIVE);
+            switch (i) {
+                case 1:
+                    office.setAttendanceTimeInSeconds(5L);
+                    break;
+                case 2:
+                    office.setAttendanceTimeInSeconds(5L);
+                    break;
+                case 3:
+                    office.setAttendanceTimeInSeconds(5L);
+                    break;
+            }
             ticketOfficeRepository.save(office);
         }
 
         // Criar clientes
-        createCustomer("Customer 1", CustomerType.OLD);
-        createCustomer("Customer 2", CustomerType.OLD);
-        createCustomer("Customer 3", CustomerType.PREGNANT);
+        createCustomer("Customer 1", CustomerType.NORMAL);
+        createCustomer("Customer 2", CustomerType.NORMAL);
+        createCustomer("Customer 3", CustomerType.NORMAL);
         createCustomer("Customer 4", CustomerType.NORMAL);
         createCustomer("Customer 5", CustomerType.NORMAL);
+        createCustomer("Customer 6", CustomerType.NORMAL);
     }
 
     private void createCustomer(String name, CustomerType type) {

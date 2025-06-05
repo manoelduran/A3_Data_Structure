@@ -10,13 +10,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import java.util.ArrayList;
 import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -37,6 +36,7 @@ public class TicketOffice {
     private Integer number;
 
     @Column(name = "attendance_time")
+    @Min(value = 1, message = "O tempo de atendimento deve ser pelo menos 1 segundo")
     private Long attendanceTimeInSeconds;
 
     @Column(nullable = false)
@@ -48,6 +48,11 @@ public class TicketOffice {
     @Builder.Default
     @JsonManagedReference
     private List<Queue> queue = new ArrayList<>();
+
+    // Método para obter o tempo de atendimento em milissegundos
+    public long getAttendanceTimeInMillis() {
+        return this.attendanceTimeInSeconds * 1000;
+    }
 
     @Override
     public boolean equals(Object o) {
