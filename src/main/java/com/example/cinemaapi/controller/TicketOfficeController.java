@@ -13,7 +13,6 @@ import com.example.cinemaapi.dto.CreateGuicheDTO;
 import com.example.cinemaapi.model.Queue;
 import com.example.cinemaapi.model.TicketOffice;
 import com.example.cinemaapi.service.TicketOfficeService;
-
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -47,4 +46,5 @@ public class TicketOfficeController {
     public ResponseEntity<List<TicketOffice>> list() {
         return ResponseEntity.ok(ticketOfficeService.list());
     }
+
 }

@@ -2,10 +2,8 @@ package com.example.cinemaapi.repository;
 
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
-
 import org.springframework.data.jpa.repository.Query;
 import com.example.cinemaapi.model.Queue;
 import com.example.cinemaapi.model.TicketOffice;
@@ -26,6 +24,8 @@ public interface QueueRepository extends JpaRepository<Queue, Long> {
     List<Queue> findByTicketOffice(TicketOffice ticketOffice);
 
     List<Queue> findByTicketOfficeAndServedFalseOrderByPriorityAscPositionAsc(TicketOffice ticketOffice);
+
+    List<Queue> findByTicketOfficeAndServedFalseOrderByPriorityAsc(TicketOffice ticketOffice);
 
     List<Queue> findByTicketOfficeOrderByPriorityDescPositionAsc(TicketOffice ticketOffice);
 

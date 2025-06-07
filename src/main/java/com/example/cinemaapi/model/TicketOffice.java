@@ -44,6 +44,11 @@ public class TicketOffice {
     @Builder.Default
     private TicketOfficeStatus status = TicketOfficeStatus.ACTIVE;
 
+    @Column(nullable = true)
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private TicketOfficeReason pauseReason = null;
+
     @OneToMany(mappedBy = "ticketOffice", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     @JsonManagedReference

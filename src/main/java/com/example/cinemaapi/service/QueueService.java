@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Service;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +16,6 @@ import com.example.cinemaapi.repository.CustomerRepository;
 import com.example.cinemaapi.model.TicketOfficeStatus;
 import com.example.cinemaapi.repository.QueueRepository;
 import com.example.cinemaapi.repository.TicketOfficeRepository;
-
 import jakarta.persistence.EntityNotFoundException;
 
 @Service
@@ -64,13 +62,12 @@ public class QueueService {
         return savedQueue;
     }
 
-    @Transactional
+    // @Transactional
     public void reorder(Long ticketOfficeId) {
         List<Queue> queue = queueRepository.findByTicketOfficeId(ticketOfficeId);
 
         queue.sort(Comparator
-                .comparing((Queue q) -> q.getCustomer().getType().getPriorityOrder())
-                .thenComparing(Queue::getCreatedAt)); // Desempate por ordem de chegada
+                .comparing((Queue q) -> q.getCustomer().getType().getPriorityOrder()));
 
         for (int i = 0; i < queue.size(); i++) {
             queue.get(i).setPosition(i + 1);
@@ -81,10 +78,12 @@ public class QueueService {
 
     @Transactional
     public void redistribuirClientes(Long guicheId) {
+        // Encontra o gucihe pelo ID
         TicketOffice guiche = ticketOfficeRepository.findById(guicheId)
                 .orElseThrow(() -> new EntityNotFoundException("Guichê não encontrado"));
-
-        List<Queue> queues = queueRepository.findByTicketOfficeAndServedFalseOrderByPriorityDescPositionAsc(guiche);
+        // encontra a fila de clientes que ainda não foram atendidos
+        List<Queue> queues = queueRepository.findByTicketOfficeAndServedFalseOrderByPriorityAsc(guiche);
+        // Pega os guiches disponiveis ativos que não são o guichê atual
         List<TicketOffice> availableTicketOffices = ticketOfficeRepository
                 .findByStatusAndIdNot(TicketOfficeStatus.ACTIVE, guicheId);
 

@@ -2,9 +2,7 @@ package com.example.cinemaapi.service;
 
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.stereotype.Service;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.cinemaapi.model.Customer;

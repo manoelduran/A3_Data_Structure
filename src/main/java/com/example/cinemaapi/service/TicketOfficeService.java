@@ -2,17 +2,15 @@ package com.example.cinemaapi.service;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.cinemaapi.model.Queue;
 import com.example.cinemaapi.model.TicketOffice;
+import com.example.cinemaapi.model.TicketOfficeReason;
 import com.example.cinemaapi.model.TicketOfficeStatus;
 import com.example.cinemaapi.repository.TicketOfficeRepository;
-
 import jakarta.persistence.EntityNotFoundException;
-
 import java.util.List;
 
 @Service
@@ -42,7 +40,10 @@ public class TicketOfficeService {
         if (ticketOffice.getStatus() == TicketOfficeStatus.PAUSED) {
             throw new IllegalStateException("Guichê já está em pausa");
         }
-
+        ticketOffice.setAttendanceTimeInSeconds(ticketOffice.getAttendanceTimeInSeconds() + 2);
+        // sortei um motivo aleatório para a pausa
+        ticketOffice.setPauseReason(
+                TicketOfficeReason.values()[(int) (Math.random() * TicketOfficeReason.values().length)]);
         ticketOffice.setStatus(TicketOfficeStatus.PAUSED);
         ticketOffice = ticketOfficeRepository.save(ticketOffice);
 
@@ -60,7 +61,7 @@ public class TicketOfficeService {
         if (ticketOffice.getStatus() != TicketOfficeStatus.PAUSED) {
             throw new IllegalStateException("Somente guichês em pausa podem voltar à ativa");
         }
-
+        ticketOffice.setPauseReason(null);
         ticketOffice.setStatus(TicketOfficeStatus.ACTIVE);
         return ticketOfficeRepository.save(ticketOffice);
     }
@@ -73,6 +74,7 @@ public class TicketOfficeService {
                     office.getQueue()
                             .stream()
                             .filter(entry -> !entry.isServed())
+                            .sorted((q1, q2) -> Integer.compare(q1.getPosition(), q2.getPosition()))
                             .toList());
         }
 
