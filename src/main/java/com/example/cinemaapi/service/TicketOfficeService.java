@@ -11,6 +11,7 @@ import com.example.cinemaapi.model.TicketOfficeReason;
 import com.example.cinemaapi.model.TicketOfficeStatus;
 import com.example.cinemaapi.repository.TicketOfficeRepository;
 import jakarta.persistence.EntityNotFoundException;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
@@ -41,6 +42,7 @@ public class TicketOfficeService {
         if (ticketOffice.getStatus() == TicketOfficeStatus.PAUSED) {
             throw new IllegalStateException("Guichê já está em pausa");
         }
+        ticketOffice.setPausedAt(LocalDateTime.now());
         ticketOffice.setAttendanceTimeInSeconds(ticketOffice.getAttendanceTimeInSeconds() + 2);
         // sortei um motivo aleatório para a pausa
         ticketOffice.setPauseReason(
@@ -62,6 +64,7 @@ public class TicketOfficeService {
         if (ticketOffice.getStatus() != TicketOfficeStatus.PAUSED) {
             throw new IllegalStateException("Somente guichês em pausa podem voltar à ativa");
         }
+        ticketOffice.setPausedAt(null);
         ticketOffice.setPauseReason(null);
         ticketOffice.setStatus(TicketOfficeStatus.ACTIVE);
         return ticketOfficeRepository.save(ticketOffice);

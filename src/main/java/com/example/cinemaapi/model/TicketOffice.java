@@ -13,6 +13,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -48,7 +49,8 @@ public class TicketOffice {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private TicketOfficeReason pauseReason = null;
-
+    @Column(name = "paused_at")
+    private LocalDateTime pausedAt;
     @OneToMany(mappedBy = "ticketOffice", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     @JsonManagedReference
