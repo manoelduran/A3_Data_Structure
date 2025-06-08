@@ -11,6 +11,7 @@ import com.example.cinemaapi.model.TicketOfficeReason;
 import com.example.cinemaapi.model.TicketOfficeStatus;
 import com.example.cinemaapi.repository.TicketOfficeRepository;
 import jakarta.persistence.EntityNotFoundException;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -47,7 +48,7 @@ public class TicketOfficeService {
         ticketOffice.setStatus(TicketOfficeStatus.PAUSED);
         ticketOffice = ticketOfficeRepository.save(ticketOffice);
 
-        queueService.redistribuirClientes(ticketOfficeId);
+        queueService.redistributeCustomer(ticketOfficeId);
 
         log.info("Guichê {} entrou em pausa. Clientes redistribuídos.", ticketOffice.getNumber());
         return ticketOffice;
@@ -88,6 +89,7 @@ public class TicketOfficeService {
         return ticketOffice.getQueue()
                 .stream()
                 .filter(Queue::isServed)
+                .sorted(Comparator.comparing(Queue::getAttendedAt))
                 .toList();
     }
 }

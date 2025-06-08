@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.cinemaapi.dto.DequeueResponse;
 import com.example.cinemaapi.model.Customer;
 import com.example.cinemaapi.model.Queue;
 import com.example.cinemaapi.model.TicketOffice;
@@ -77,7 +78,7 @@ public class QueueService {
     }
 
     @Transactional
-    public void redistribuirClientes(Long guicheId) {
+    public void redistributeCustomer(Long guicheId) {
         // Encontra o gucihe pelo ID
         TicketOffice guiche = ticketOfficeRepository.findById(guicheId)
                 .orElseThrow(() -> new EntityNotFoundException("Guichê não encontrado"));
@@ -127,10 +128,12 @@ public class QueueService {
     }
 
     @Transactional
-    public Queue dequeue(Long ticketOfficeId) {
+    public DequeueResponse dequeue(Long ticketOfficeId) {
         TicketOffice ticketOffice = ticketOfficeRepository.findById(ticketOfficeId)
                 .orElseThrow(() -> new EntityNotFoundException("Guichê não encontrado"));
-
+        if (ticketOffice.getStatus() != TicketOfficeStatus.ACTIVE) {
+            throw new IllegalStateException("Guichê não está ativo");
+        }
         // Busca apenas os clientes que ainda não foram atendidos, ordenados por posição
         List<Queue> queues = queueRepository
                 .findByTicketOfficeAndServedFalseOrderByPriorityAscPositionAsc(ticketOffice);
@@ -152,7 +155,8 @@ public class QueueService {
             queueRepository.saveAll(queues);
 
             log.info("Cliente atendido no guichê {}", ticketOffice.getNumber());
-            return next;
+
+            return new DequeueResponse(next, ticketOffice);
         }
 
         throw new EntityNotFoundException("Nenhum cliente na fila do guichê " + ticketOfficeId);
