@@ -38,22 +38,12 @@ public class SeedService {
             ticketOfficeRepository.save(office);
         }
 
-        // Criar clientes
         createCustomer("Customer 1", CustomerType.NORMAL);
         createCustomer("Customer 2", CustomerType.NORMAL);
         createCustomer("Customer 3", CustomerType.NORMAL);
         createCustomer("Customer 4", CustomerType.NORMAL);
         createCustomer("Customer 5", CustomerType.NORMAL);
         createCustomer("Customer 6", CustomerType.NORMAL);
-        createCustomer("Customer 7", CustomerType.NORMAL);
-        createCustomer("Customer 8", CustomerType.NORMAL);
-        createCustomer("Customer 9", CustomerType.NORMAL);
-        createCustomer("Customer 10", CustomerType.NORMAL);
-        createCustomer("Customer 11", CustomerType.NORMAL);
-        createCustomer("Customer 12", CustomerType.NORMAL);
-        createCustomer("Customer 13", CustomerType.NORMAL);
-        createCustomer("Customer 14", CustomerType.NORMAL);
-        createCustomer("Customer 15", CustomerType.NORMAL);
     }
 
     private void createCustomer(String name, CustomerType type) {
